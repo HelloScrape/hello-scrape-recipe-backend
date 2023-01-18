@@ -8,7 +8,6 @@ Hello Fresh Recipe Backend | Get all scraped recipes from Hello Fresh
 - GET: `/recipe/language/<nl/en/fr>` - Returns a 200 OK response, with a list of recipes in the specified language
 - GET: `/recipe/id/:id`- Returns a 200 OK response, with the recipe with the specified id
 
-
 ## How to run
 
 - Copy `.env.example` to `.env`
