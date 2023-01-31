@@ -79,6 +79,57 @@ router.get('/id/:id', async function (req: Request, res: Response) {
   res.json({ data: recipes, error: null, imageUrl: process.env.PUBLIC_IMAGES_PATH });
 });
 
+router.get('/search/:language/:query', async function (req: Request, res: Response) {
+  if (req.params.language.length !== 2) {
+    res.status(400).json({ error: 'You must provide a valid language (en,nl,fr)!', data: null });
+    return;
+  }
+  if (req.params.language !== 'nl' && req.params.language !== 'en' && req.params.language !== 'fr') {
+    res.status(400).json({ error: 'You must provide a valid language (en,nl,fr)!', data: null });
+    return;
+  }
+  // search recipeName, description, weekName,fromPdf
+  let page = parseInt(req.query.page as string); //tslint:disable-line
+  let pageSize = parseInt(req.query.pageSize as string); //tslint:disable-line
+
+  if (isNaN(page)) {
+    page = defaultPage;
+  }
+  if (isNaN(pageSize)) {
+    pageSize = defaultPageSize;
+  }
+
+  let recipes = (await recipe.find(
+    {
+      $and: [
+        { language: req.params.language },
+        {
+          $or: [
+            { recipeName: { $regex: req.params.query, $options: 'i' } },
+            { description: { $regex: req.params.query, $options: 'i' } },
+            { weekName: { $regex: req.params.query, $options: 'i' } },
+            { fromPdf: { $regex: req.params.query, $options: 'i' } },
+          ],
+        },
+      ],
+    },
+    {},
+    { skip: (page - 1) * pageSize, limit: pageSize, sort: { createdAt: -1 } }
+  )) as any;
+  recipes = fixRecipeImageUrls(recipes);
+  recipes = filterRecipesWithoutImageOrName(recipes);
+  recipes = cleanUpTitle(recipes);
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+  res.json({
+    data: recipes,
+    error: null,
+    imageUrl: process.env.PUBLIC_IMAGES_PATH,
+    page,
+    pageSize,
+    total: Math.ceil((await recipe.countDocuments()) / pageSize),
+  });
+});
+
 export default router;
 
 function fixRecipeImageUrls(recipes: recipeSchemaType[]): recipeSchemaType[] {

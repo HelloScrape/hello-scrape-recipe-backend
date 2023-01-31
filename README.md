@@ -7,6 +7,7 @@ Hello Fresh Recipe Backend | Get all scraped recipes from Hello Fresh
 - GET: `/recipe` - Returns a 200 OK response, list with all recipes
 - GET: `/recipe/language/<nl/en/fr>` - Returns a 200 OK response, with a list of recipes in the specified language
 - GET: `/recipe/id/:id`- Returns a 200 OK response, with the recipe with the specified id
+- GET: `/recipe/search/:language/:query`- Returns a 200 OK response, with a list of recipes matching the language and the query
 
 ## How to run
 
