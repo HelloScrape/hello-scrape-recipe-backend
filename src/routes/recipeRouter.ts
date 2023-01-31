@@ -17,12 +17,19 @@ router.get('/', async function (req: Request, res: Response) {
     pageSize = defaultPageSize;
   }
 
-  let recipes = (await recipe.find({}, {}, { skip: (page - 1) * pageSize, limit: pageSize })) as any;
+  let recipes = (await recipe.find({}, {}, { skip: (page - 1) * pageSize, limit: pageSize, sort: { createdAt: -1 } })) as any;
   recipes = fixRecipeImageUrls(recipes);
   recipes = filterRecipesWithoutImageOrName(recipes);
   recipes = cleanUpTitle(recipes);
   res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  res.json({ data: recipes, error: null, imageUrl: process.env.PUBLIC_IMAGES_PATH, page, pageSize, total: Math.ceil((await recipe.countDocuments()) / pageSize) });
+  res.json({
+    data: recipes,
+    error: null,
+    imageUrl: process.env.PUBLIC_IMAGES_PATH,
+    page,
+    pageSize,
+    total: Math.ceil((await recipe.countDocuments()) / pageSize),
+  });
 });
 
 router.get('/language/:language', async function (req: Request, res: Response) {
@@ -45,12 +52,23 @@ router.get('/language/:language', async function (req: Request, res: Response) {
     pageSize = defaultPageSize;
   }
 
-  let recipes = (await recipe.find({ language: req.params.language }, {}, { skip: (page - 1) * pageSize, limit: pageSize })) as any;
+  let recipes = (await recipe.find(
+    { language: req.params.language },
+    {},
+    { skip: (page - 1) * pageSize, limit: pageSize, sort: { createdAt: -1 } }
+  )) as any;
   recipes = fixRecipeImageUrls(recipes);
   recipes = filterRecipesWithoutImageOrName(recipes);
   recipes = cleanUpTitle(recipes);
   res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  res.json({ data: recipes, error: null, imageUrl: process.env.PUBLIC_IMAGES_PATH, page, pageSize, total: Math.ceil((await recipe.countDocuments({ language: req.params.language })) / pageSize) });
+  res.json({
+    data: recipes,
+    error: null,
+    imageUrl: process.env.PUBLIC_IMAGES_PATH,
+    page,
+    pageSize,
+    total: Math.ceil((await recipe.countDocuments({ language: req.params.language })) / pageSize),
+  });
 });
 
 router.get('/id/:id', async function (req: Request, res: Response) {
